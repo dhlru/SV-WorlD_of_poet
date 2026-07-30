@@ -10,17 +10,109 @@
         window.firebaseModules = { initializeApp, getDatabase, ref, set, onValue };
     </script>
     <style>
-        /* ====== ВЕСЬ ТВОЙ СТИЛЬ (полный) ====== */
+        /* ====== БАЗОВЫЙ СТИЛЬ ====== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #1e150a; background-image: radial-gradient(ellipse at center, #2f1f0e 0%, #140e08 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 30px 15px; font-family: 'EB Garamond', 'Times New Roman', serif; }
-        .book-wrapper { max-width: 1100px; width: 100%; background: #e7dcc8; background-image: linear-gradient(165deg, #f2ebe0 0%, #dacfb8 100%); padding: 45px 40px 40px; border-radius: 30px; box-shadow: 0 30px 80px rgba(0,0,0,0.9), inset 0 0 50px rgba(180,130,70,0.25), inset 0 2px 4px #fff8e7; border: 8px double #7a5d3c; position: relative; }
+        body {
+            background: #1e150a;
+            background-image: radial-gradient(ellipse at center, #2f1f0e 0%, #140e08 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 15px;
+            font-family: 'EB Garamond', 'Times New Roman', serif;
+            transition: background 0.5s ease;
+        }
+        /* ====== ТЕМЫ ====== */
+        body.theme-light {
+            background: #f0ebe0;
+            background-image: none;
+        }
+        body.theme-light .book-wrapper {
+            background: #fcf8f0;
+            border-color: #b5956a;
+        }
+        body.theme-light .page-header h1 { color: #2f1f0e; }
+        body.theme-light .card { background: rgba(255, 248, 235, 0.8); }
+        body.theme-light .btn { background: #8b6b44; color: #f7efe0; }
+        
+        body.theme-gold {
+            background: #2a1a0a;
+            background-image: radial-gradient(ellipse at center, #3d2b16 0%, #1f140a 100%);
+        }
+        body.theme-gold .book-wrapper {
+            border-color: #ffd700;
+            box-shadow: 0 30px 80px rgba(255, 215, 0, 0.15), inset 0 0 50px rgba(255, 215, 0, 0.05);
+        }
+        body.theme-gold .page-header h1 { color: #ffd700; text-shadow: 0 0 20px rgba(255, 215, 0, 0.2); }
+        body.theme-gold .btn { background: #b8860b; border-color: #8b6508; }
+        body.theme-gold .btn:hover { background: #daa520; }
+
+        .book-wrapper {
+            max-width: 1100px;
+            width: 100%;
+            background: #e7dcc8;
+            background-image: linear-gradient(165deg, #f2ebe0 0%, #dacfb8 100%);
+            padding: 45px 40px 40px;
+            border-radius: 30px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.9), inset 0 0 50px rgba(180,130,70,0.25), inset 0 2px 4px #fff8e7;
+            border: 8px double #7a5d3c;
+            position: relative;
+            transition: all 0.5s ease;
+        }
         .book-wrapper::before { content: "❦"; position: absolute; top: 12px; left: 28px; font-size: 42px; color: #7a5d3c; opacity: 0.25; transform: rotate(-8deg); }
         .book-wrapper::after { content: "❦"; position: absolute; bottom: 12px; right: 28px; font-size: 42px; color: #7a5d3c; opacity: 0.25; transform: rotate(12deg); }
-        .page-header { border-bottom: 3px double #7a5d3c; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; }
-        .page-header h1 { font-size: 3rem; color: #2f1f0e; letter-spacing: 8px; text-shadow: 3px 3px 0 rgba(122,93,60,0.15); text-transform: uppercase; }
-        .page-header .sub { font-size: 1.1rem; color: #5a4228; font-style: italic; border-left: 3px solid #b5956a; padding-left: 18px; }
-        .card { background: rgba(247,239,224,0.45); padding: 30px 35px; border-radius: 24px; border: 1px solid #c5b094; box-shadow: inset 0 0 40px rgba(160,120,80,0.1); margin-bottom: 20px; backdrop-filter: blur(2px); }
-        .btn { background: #6f4e2e; border: 2px solid #4f371f; color: #f7efe0; padding: 12px 34px; border-radius: 50px; font-family: 'EB Garamond', serif; font-size: 1.15rem; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 5px 0 #3a281a; text-transform: uppercase; display: inline-block; }
+        .page-header {
+            border-bottom: 3px double #7a5d3c;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        .page-header h1 {
+            font-size: 3rem;
+            color: #2f1f0e;
+            letter-spacing: 8px;
+            text-shadow: 3px 3px 0 rgba(122,93,60,0.15);
+            text-transform: uppercase;
+        }
+        .page-header .sub {
+            font-size: 1.1rem;
+            color: #5a4228;
+            font-style: italic;
+            border-left: 3px solid #b5956a;
+            padding-left: 18px;
+        }
+        .card {
+            background: rgba(247,239,224,0.45);
+            padding: 30px 35px;
+            border-radius: 24px;
+            border: 1px solid #c5b094;
+            box-shadow: inset 0 0 40px rgba(160,120,80,0.1);
+            margin-bottom: 20px;
+            backdrop-filter: blur(2px);
+            transition: all 0.3s ease;
+        }
+        body.theme-light .card { background: rgba(255, 248, 235, 0.8); }
+        body.theme-gold .card { background: rgba(255, 215, 0, 0.05); }
+        
+        .btn {
+            background: #6f4e2e;
+            border: 2px solid #4f371f;
+            color: #f7efe0;
+            padding: 12px 34px;
+            border-radius: 50px;
+            font-family: 'EB Garamond', serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 5px 0 #3a281a;
+            text-transform: uppercase;
+            display: inline-block;
+        }
         .btn:hover { background: #8b6b44; transform: translateY(-2px); box-shadow: 0 7px 0 #3a281a; }
         .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #3a281a; }
         .btn-secondary { background: #4f3a24; box-shadow: 0 5px 0 #2d1f12; }
@@ -32,67 +124,423 @@
         .flex-column { flex-direction: column; }
         .hidden { display: none !important; }
         .mt-20 { margin-top: 20px; }
-        .coins-badge { background: #b8860b; color: #1e150a; padding: 6px 24px; border-radius: 50px; font-size: 1.4rem; font-weight: 700; border: 2px solid #8b6508; }
-        #q-options .btn { width: 100%; text-align: left; padding: 14px 26px; font-size: 1.1rem; background: #e8dccc; color: #2d1f12; border-color: #b5956a; box-shadow: 0 4px 0 #8b6b44; text-transform: none; transition: all 0.15s ease; }
+        .coins-badge {
+            background: #b8860b;
+            color: #1e150a;
+            padding: 6px 24px;
+            border-radius: 50px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            border: 2px solid #8b6508;
+        }
+        /* ====== ВИКТОРИНА ====== */
+        #q-options .btn {
+            width: 100%;
+            text-align: left;
+            padding: 14px 26px;
+            font-size: 1.1rem;
+            background: #e8dccc;
+            color: #2d1f12;
+            border-color: #b5956a;
+            box-shadow: 0 4px 0 #8b6b44;
+            text-transform: none;
+            transition: all 0.15s ease;
+        }
         #q-options .btn:hover { background: #dcccb4; }
-        .answer-correct { background: #00c853 !important; border-color: #009624 !important; color: #fff !important; transform: scale(1.08); box-shadow: 0 0 30px rgba(0,200,80,0.7) !important; border-width: 4px !important; }
-        .answer-wrong { background: #d50000 !important; border-color: #9b0000 !important; color: #fff !important; transform: scale(0.92); box-shadow: 0 0 30px rgba(213,0,0,0.7) !important; border-width: 4px !important; }
-        .hint-active { border: 4px solid #ffd700 !important; box-shadow: 0 0 30px rgba(255,215,0,0.5) !important; border-radius: 20px; padding: 20px; transition: all 0.3s ease; }
-        .hint-message { font-style: italic; color: #5a4228; background: #e8dccc; padding: 10px 20px; border-radius: 40px; border-left: 6px solid #b8860b; margin-top: 14px; min-height: 44px; transition: all 0.3s ease; }
-        .book-item { background: #f7efe0; border: 2px solid #c5b094; border-radius: 22px; padding: 20px 16px; width: 240px; text-align: center; transition: 0.3s; box-shadow: 6px 6px 20px rgba(0,0,0,0.08); cursor: pointer; }
+        .answer-correct {
+            background: #00c853 !important;
+            border-color: #009624 !important;
+            color: #fff !important;
+            transform: scale(1.08);
+            box-shadow: 0 0 30px rgba(0,200,80,0.7) !important;
+            border-width: 4px !important;
+        }
+        .answer-wrong {
+            background: #d50000 !important;
+            border-color: #9b0000 !important;
+            color: #fff !important;
+            transform: scale(0.92);
+            box-shadow: 0 0 30px rgba(213,0,0,0.7) !important;
+            border-width: 4px !important;
+        }
+        /* ====== ТРИ УРОВНЯ ПОДСКАЗОК ====== */
+        .hint-level-1 {
+            border: 4px solid #ffd700 !important;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5) !important;
+            border-radius: 20px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        .hint-level-2 {
+            border: 4px solid #ff8c00 !important;
+            box-shadow: 0 0 40px rgba(255, 140, 0, 0.6) !important;
+            border-radius: 20px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        .hint-level-3 {
+            border: 4px solid #ff0000 !important;
+            box-shadow: 0 0 50px rgba(255, 0, 0, 0.7) !important;
+            border-radius: 20px;
+            padding: 20px;
+            animation: fireGlow 0.5s infinite alternate;
+            transition: all 0.3s ease;
+        }
+        @keyframes fireGlow {
+            0% { box-shadow: 0 0 30px rgba(255, 0, 0, 0.5); }
+            100% { box-shadow: 0 0 60px rgba(255, 69, 0, 0.9), 0 0 80px rgba(255, 0, 0, 0.4); }
+        }
+        .hint-message {
+            font-style: italic;
+            color: #5a4228;
+            background: #e8dccc;
+            padding: 10px 20px;
+            border-radius: 40px;
+            border-left: 6px solid #b8860b;
+            margin-top: 14px;
+            min-height: 44px;
+            transition: all 0.3s ease;
+        }
+        /* ====== МАГАЗИН ====== */
+        .book-item {
+            background: #f7efe0;
+            border: 2px solid #c5b094;
+            border-radius: 22px;
+            padding: 20px 16px;
+            width: 240px;
+            text-align: center;
+            transition: 0.3s;
+            box-shadow: 6px 6px 20px rgba(0,0,0,0.08);
+            cursor: pointer;
+        }
         .book-item:hover { transform: translateY(-4px); box-shadow: 8px 12px 30px rgba(0,0,0,0.12); }
         .book-item img { width: 100%; height: 200px; object-fit: cover; border-radius: 16px; border: 3px solid #b5956a; pointer-events: none; }
         .book-item img.out-of-stock { filter: grayscale(1); opacity: 0.5; }
         .book-item h3 { font-size: 1.4rem; color: #2f1f0e; margin: 10px 0 4px; }
         .book-item .price { font-size: 1.2rem; color: #5a4228; }
-        .stock-status { font-size: 0.95rem; font-weight: 700; padding: 5px 16px; border-radius: 40px; display: inline-block; margin: 6px 0 12px; }
+        .stock-status {
+            font-size: 0.95rem;
+            font-weight: 700;
+            padding: 5px 16px;
+            border-radius: 40px;
+            display: inline-block;
+            margin: 6px 0 12px;
+        }
         .stock-yes { background: #2b5e2b; color: #f7efe0; }
         .stock-no { background: #6b2e2e; color: #f7efe0; }
         .stock-order { background: #b8860b; color: #1e150a; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(6px); animation: fadeIn 0.3s ease; }
-        .modal-box { background: #f7efe0; padding: 30px 35px; border-radius: 34px; border: 8px double #b8860b; max-width: 600px; width: 95%; max-height: 95vh; overflow-y: auto; box-shadow: 0 40px 80px rgba(0,0,0,0.9); animation: popIn 0.4s ease; position: relative; }
-        .modal-box .close-btn { position: absolute; top: 15px; right: 20px; font-size: 2rem; cursor: pointer; color: #5a4228; background: none; border: none; font-family: 'EB Garamond', serif; }
-        .modal-box .close-btn:hover { transform: rotate(90deg); color: #2f1f0e; }
-        .modal-box .gallery-container { position: relative; width: 100%; max-height: 400px; overflow: hidden; border-radius: 20px; border: 3px solid #b5956a; background: #1e150a; margin-bottom: 16px; }
-        .modal-box .gallery-container img { width: 100%; height: 400px; object-fit: contain; display: none; background: #1e150a; }
+        /* ====== МОДАЛКИ ====== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(6px);
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-box {
+            background: #f7efe0;
+            padding: 30px 35px;
+            border-radius: 34px;
+            border: 8px double #b8860b;
+            max-width: 600px;
+            width: 95%;
+            max-height: 95vh;
+            overflow-y: auto;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.9);
+            animation: popIn 0.4s ease;
+            position: relative;
+        }
+        /* ====== КРЕСТИК (теперь видимый!) ====== */
+        .modal-box .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 18px;
+            font-size: 2.4rem;
+            cursor: pointer;
+            color: #fff;
+            background: rgba(0,0,0,0.5);
+            border: 2px solid #ffd700;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .modal-box .close-btn:hover {
+            transform: rotate(90deg) scale(1.1);
+            background: rgba(255,0,0,0.6);
+            border-color: #ff0000;
+            box-shadow: 0 0 30px rgba(255,0,0,0.3);
+        }
+        .modal-box .gallery-container {
+            position: relative;
+            width: 100%;
+            max-height: 400px;
+            overflow: hidden;
+            border-radius: 20px;
+            border: 3px solid #b5956a;
+            background: #1e150a;
+            margin-bottom: 16px;
+        }
+        .modal-box .gallery-container img {
+            width: 100%;
+            height: 400px;
+            object-fit: contain;
+            display: none;
+            background: #1e150a;
+        }
         .modal-box .gallery-container img.active { display: block; }
-        .modal-box .gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: #fff; border: none; font-size: 2rem; padding: 8px 16px; border-radius: 50%; cursor: pointer; transition: 0.3s; z-index: 10; }
+        .modal-box .gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            border: none;
+            font-size: 2rem;
+            padding: 8px 16px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+            z-index: 10;
+        }
         .modal-box .gallery-nav:hover { background: rgba(0,0,0,0.8); }
         .modal-box .gallery-nav.prev { left: 10px; }
         .modal-box .gallery-nav.next { right: 10px; }
-        .modal-box .gallery-dots { display: flex; justify-content: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-        .modal-box .gallery-dots span { width: 12px; height: 12px; border-radius: 50%; background: #b5956a; cursor: pointer; transition: 0.3s; }
+        .modal-box .gallery-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .modal-box .gallery-dots span {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #b5956a;
+            cursor: pointer;
+            transition: 0.3s;
+        }
         .modal-box .gallery-dots span.active { background: #b8860b; transform: scale(1.3); }
-        .modal-box .book-info { text-align: center; margin-top: 16px; }
+        .modal-box .book-info {
+            text-align: center;
+            margin-top: 16px;
+        }
         .modal-box .book-info h2 { color: #2f1f0e; font-size: 2rem; margin-bottom: 4px; }
         .modal-box .book-info .price { font-size: 1.4rem; color: #5a4228; }
-        .modal-box .book-info .status { font-size: 1rem; font-weight: 700; display: inline-block; padding: 4px 16px; border-radius: 40px; margin: 8px 0; }
+        .modal-box .book-info .status {
+            font-size: 1rem;
+            font-weight: 700;
+            display: inline-block;
+            padding: 4px 16px;
+            border-radius: 40px;
+            margin: 8px 0;
+        }
         .modal-box .book-info .status.in-stock { background: #2b5e2b; color: #f7efe0; }
         .modal-box .book-info .status.out-of-stock { background: #6b2e2e; color: #f7efe0; }
         .modal-box .book-info .status.pre-order { background: #b8860b; color: #1e150a; }
         .modal-digital .icon { font-size: 4rem; margin-bottom: 10px; }
-        .modal-digital .highlight { background: #e8dccc; padding: 10px 16px; border-radius: 16px; border-left: 6px solid #b8860b; display: inline-block; color: #2f1f0e; font-weight: 700; }
-        .admin-hidden { position: fixed; bottom: 10px; right: 10px; opacity: 0.15; transition: opacity 0.3s; z-index: 999; cursor: pointer; font-size: 0.7rem; color: #5a4228; background: #e8dccc; padding: 4px 10px; border-radius: 20px; }
+        .modal-digital .highlight {
+            background: #e8dccc;
+            padding: 10px 16px;
+            border-radius: 16px;
+            border-left: 6px solid #b8860b;
+            display: inline-block;
+            color: #2f1f0e;
+            font-weight: 700;
+        }
+        /* ====== АДМИНКА ====== */
+        .admin-hidden {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            opacity: 0.15;
+            transition: opacity 0.3s;
+            z-index: 999;
+            cursor: pointer;
+            font-size: 0.7rem;
+            color: #5a4228;
+            background: #e8dccc;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
         .admin-hidden:hover { opacity: 1; }
-        .admin-area { background: #e8dccc; padding: 24px; border-radius: 22px; border: 2px dashed #b8860b; margin-top: 14px; }
-        .admin-area input { width: 100%; padding: 10px 14px; margin: 6px 0 12px; border-radius: 14px; border: 2px solid #b5956a; background: #f7efe0; font-family: 'EB Garamond', serif; font-size: 1rem; color: #1e150a; }
+        .admin-area {
+            background: #e8dccc;
+            padding: 24px;
+            border-radius: 22px;
+            border: 2px dashed #b8860b;
+            margin-top: 14px;
+        }
+        .admin-area input {
+            width: 100%;
+            padding: 10px 14px;
+            margin: 6px 0 12px;
+            border-radius: 14px;
+            border: 2px solid #b5956a;
+            background: #f7efe0;
+            font-family: 'EB Garamond', serif;
+            font-size: 1rem;
+            color: #1e150a;
+        }
         .admin-area label { font-weight: 700; color: #3a281a; }
-        .admin-checkbox { display: flex; align-items: center; gap: 12px; margin: 6px 0; }
-        .admin-checkbox input[type="checkbox"] { width: 24px; height: 24px; accent-color: #b8860b; cursor: pointer; }
-        .order-item { background: #f7efe0; padding: 14px 20px; border-radius: 16px; border-left: 8px solid #b8860b; margin: 8px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
-        .settings-btn { position: fixed; top: 20px; right: 20px; font-size: 2rem; cursor: pointer; z-index: 999; background: rgba(0,0,0,0.4); border-radius: 50%; width: 60px; height: 60px; display: flex; justify-content: center; align-items: center; transition: 0.3s; backdrop-filter: blur(4px); border: 2px solid rgba(255,215,0,0.3); color: #ffd700; }
+        .admin-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 6px 0;
+        }
+        .admin-checkbox input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            accent-color: #b8860b;
+            cursor: pointer;
+        }
+        .order-item {
+            background: #f7efe0;
+            padding: 14px 20px;
+            border-radius: 16px;
+            border-left: 8px solid #b8860b;
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        /* ====== ИНДИКАТОР FIREBASE ====== */
+        .firebase-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .firebase-status.connected {
+            background: rgba(0, 255, 0, 0.15);
+            color: #00ff00;
+            border: 1px solid rgba(0, 255, 0, 0.3);
+        }
+        .firebase-status.disconnected {
+            background: rgba(255, 0, 0, 0.15);
+            color: #ff4444;
+            border: 1px solid rgba(255, 0, 0, 0.3);
+        }
+        /* ====== НАСТРОЙКИ ====== */
+        .settings-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 999;
+            background: rgba(0,0,0,0.4);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: 0.3s;
+            backdrop-filter: blur(4px);
+            border: 2px solid rgba(255,215,0,0.3);
+            color: #ffd700;
+        }
         .settings-btn:hover { transform: rotate(60deg) scale(1.1); background: rgba(0,0,0,0.6); }
-        .settings-panel { position: fixed; top: 80px; right: 20px; background: #e7dcc8; padding: 24px; border-radius: 24px; border: 4px double #b8860b; box-shadow: 0 20px 60px rgba(0,0,0,0.8); z-index: 999; max-width: 320px; width: 90%; backdrop-filter: blur(10px); }
+        .settings-panel {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: #e7dcc8;
+            padding: 24px;
+            border-radius: 24px;
+            border: 4px double #b8860b;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            z-index: 999;
+            max-width: 320px;
+            width: 90%;
+            backdrop-filter: blur(10px);
+        }
         .settings-panel h3 { color: #2f1f0e; border-bottom: 2px solid #b5956a; padding-bottom: 10px; margin-bottom: 16px; text-align: center; }
         .settings-panel label { display: block; margin: 10px 0 4px; font-weight: 700; color: #3a281a; }
-        .settings-panel select, .settings-panel input { width: 100%; padding: 8px 12px; border-radius: 14px; border: 2px solid #b5956a; background: #f7efe0; font-family: 'EB Garamond', serif; font-size: 1rem; }
-        .settings-panel .support-phone { margin-top: 10px; padding: 10px; background: #e8dccc; border-radius: 14px; border-left: 4px solid #b8860b; font-size: 0.9rem; color: #2f1f0e; }
+        .settings-panel select, .settings-panel input {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 14px;
+            border: 2px solid #b5956a;
+            background: #f7efe0;
+            font-family: 'EB Garamond', serif;
+            font-size: 1rem;
+        }
+        .settings-panel .support-phone {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8dccc;
+            border-radius: 14px;
+            border-left: 4px solid #b8860b;
+            font-size: 0.9rem;
+            color: #2f1f0e;
+        }
         .settings-panel .support-phone strong { display: block; margin-bottom: 4px; }
-        @keyframes popIn { 0% { transform: scale(0.7) rotate(-3deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
-        @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
+        /* ====== АНИМАЦИИ ====== */
+        @keyframes popIn {
+            0% { transform: scale(0.7) rotate(-3deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0); opacity: 1; }
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
         .hint-burn { animation: burn 0.7s ease forwards; }
-        @keyframes burn { 0% { opacity: 1; transform:scale(1); filter:brightness(1); } 40% { opacity:0.9; transform:scale(1.3); filter:brightness(2.5); } 100% { opacity:0; transform:scale(0.1); filter:brightness(4); display:none; } }
-        @media (max-width:700px) { .book-wrapper { padding:20px 12px; } .page-header h1 { font-size:2rem; letter-spacing:4px; } .book-item { width:100%; max-width:280px; } .modal-box { padding:20px 16px; } .modal-box .gallery-container img { height: 250px; } .modal-box .gallery-nav { font-size: 1.2rem; padding: 4px 10px; } .settings-btn { width: 50px; height: 50px; font-size: 1.5rem; top: 15px; right: 15px; } .settings-panel { top: 70px; right: 10px; padding: 18px; } .admin-hidden { font-size: 0.6rem; } }
+        @keyframes burn {
+            0% { opacity: 1; transform:scale(1); filter:brightness(1); }
+            40% { opacity:0.9; transform:scale(1.3); filter:brightness(2.5); }
+            100% { opacity:0; transform:scale(0.1); filter:brightness(4); display:none; }
+        }
+        /* ====== АНИМАЦИЯ ОГНЯ ДЛЯ СУПЕР ИГРЫ ====== */
+        .fire-animation {
+            animation: firePulse 0.5s infinite alternate;
+            text-shadow: 0 0 10px #ff4500, 0 0 20px #ff4500, 0 0 30px #ff0000;
+        }
+        @keyframes firePulse {
+            0% { text-shadow: 0 0 10px #ff4500, 0 0 20px #ff4500; }
+            100% { text-shadow: 0 0 20px #ff4500, 0 0 40px #ff0000, 0 0 60px #ff4500; transform: scale(1.05); }
+        }
+        /* ====== АДАПТИВ ====== */
+        @media (max-width:700px) {
+            .book-wrapper { padding:20px 12px; }
+            .page-header h1 { font-size:2rem; letter-spacing:4px; }
+            .book-item { width:100%; max-width:280px; }
+            .modal-box { padding:20px 16px; }
+            .modal-box .gallery-container img { height: 250px; }
+            .modal-box .gallery-nav { font-size: 1.2rem; padding: 4px 10px; }
+            .settings-btn { width: 50px; height: 50px; font-size: 1.5rem; top: 15px; right: 15px; }
+            .settings-panel { top: 70px; right: 10px; padding: 18px; }
+            .admin-hidden { font-size: 0.6rem; }
+            .modal-box .close-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1.8rem;
+                top: 8px;
+                right: 12px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -106,12 +554,12 @@
             <option value="light">Светлая</option>
             <option value="gold">Золотая</option>
         </select>
-        <label>📞 Поддержка</label>
+        <label>📞 Номер для семьи</label>
         <div class="support-phone" id="supportDisplay">
-            <strong>☎️ Номер поддержки:</strong>
+            <strong>☎️ Номер:</strong>
             <span id="supportPhoneText">Не указан</span>
         </div>
-        <button class="btn btn-gold" onclick="openSupportModal()">✏️ Изменить номер</button>
+        <button class="btn btn-gold" onclick="openSupportModal()">👁️ Посмотреть номер</button>
         <br>
         <button class="btn btn-secondary" onclick="toggleSettings()" style="margin-top:10px;">Закрыть</button>
     </div>
@@ -168,6 +616,7 @@
         <div id="page-admin" class="card hidden">
             <h2 style="color:#2f1f0e;">⚙️ Управление</h2>
             <div class="admin-area">
+                <div id="firebase-status" class="firebase-status disconnected">⏳ Проверка...</div>
                 <h3>📦 Заказы</h3>
                 <div id="orders-list"></div>
                 <hr style="border-color:#b8860b; margin:22px 0;">
@@ -234,13 +683,13 @@
             </div>
         </div>
 
-        <!-- ===== ПОДДЕРЖКА ===== -->
+        <!-- ===== ПОДДЕРЖКА (ПРОСМОТР НОМЕРА) ===== -->
         <div id="modal-support" class="modal-overlay hidden">
             <div class="modal-box">
                 <button class="close-btn" onclick="closeSupportModal()">✕</button>
                 <div class="icon">📞</div>
-                <h2>Написать в поддержку</h2>
-                <p style="font-size:1rem;">Номер телефона для связи с администратором:</p>
+                <h2>Номер для семьи</h2>
+                <p style="font-size:1rem;">Номер телефона для связи:</p>
                 <p style="font-size:1.8rem; font-weight:700; color:#b8860b;" id="supportModalPhone">Не указан</p>
                 <button class="btn btn-gold" onclick="copySupportPhone()">📋 Скопировать номер</button>
                 <br><br>
@@ -248,12 +697,12 @@
             </div>
         </div>
 
-        <!-- ===== ИЗМЕНЕНИЕ НОМЕРА ===== -->
+        <!-- ===== ИЗМЕНЕНИЕ НОМЕРА (для админа) ===== -->
         <div id="modal-edit-support" class="modal-overlay hidden">
             <div class="modal-box">
                 <button class="close-btn" onclick="closeEditSupportModal()">✕</button>
                 <div class="icon">✏️</div>
-                <h2>Изменить номер поддержки</h2>
+                <h2>Изменить номер</h2>
                 <p>Введите номер телефона (только для администратора):</p>
                 <input type="text" id="supportPhoneInput" placeholder="+7 999 123-45-67" style="width:100%; padding:12px; border-radius:14px; border:2px solid #b5956a; font-size:1.2rem; margin-bottom:16px;">
                 <button class="btn btn-gold" onclick="saveSupportPhone()">💾 Сохранить</button>
@@ -272,7 +721,7 @@
                 <p id="super-question" style="font-size:1.4rem; margin:18px 0; color:#2f1f0e;">Вопрос...</p>
                 <div id="super-options" class="flex flex-column" style="gap:10px;"></div>
                 <p id="super-result" style="font-size:1.2rem; margin-top:12px; font-weight:700;"></p>
-                <p id="super-timer" style="font-size:1.5rem; font-weight:bold; color:#ffd700; margin-top:10px;">⏱️ 60</p>
+                <p id="super-timer" style="font-size:1.5rem; font-weight:bold; margin-top:10px; transition: all 0.5s ease;">⏱️ 60</p>
                 <button class="btn btn-secondary" onclick="closeSuperModal()">🚪 Выйти</button>
             </div>
         </div>
@@ -306,8 +755,25 @@
                 firebaseDatabase = getDatabase(app);
                 isFirebaseConnected = true;
                 console.log('✅ Firebase подключен!');
+                updateFirebaseStatus();
                 loadDataFromFirebase();
-            } catch (e) { console.error('Firebase error:', e); }
+            } catch (e) {
+                console.error('Firebase error:', e);
+                isFirebaseConnected = false;
+                updateFirebaseStatus();
+            }
+        }
+
+        function updateFirebaseStatus() {
+            const statusEl = document.getElementById('firebase-status');
+            if (!statusEl) return;
+            if (isFirebaseConnected) {
+                statusEl.className = 'firebase-status connected';
+                statusEl.innerHTML = '✅ Firebase подключено';
+            } else {
+                statusEl.className = 'firebase-status disconnected';
+                statusEl.innerHTML = '❌ Firebase не подключено';
+            }
         }
 
         function loadDataFromFirebase() {
@@ -350,6 +816,7 @@
         let supportPhone = localStorage.getItem('supportPhone') || '';
         let currentProductId = null, currentImageIndex = 0, productImages = [];
         let superTimerInterval = null;
+        let usedHintLevels = 0;
 
         // ================================================================
         //  ЗВУКИ
@@ -502,12 +969,13 @@
             state.shuffledQuestions = getRandomQuestions();
             state.currentQuestion = 0;
             state.usedHints = { fifty: false, call: false, hall: false };
+            usedHintLevels = 0;
             state.coins = 0;
             saveState();
             showPage('page-quiz');
             renderQuestion();
-            document.getElementById('hint-message').classList.remove('hint-active');
-            document.getElementById('q-text').classList.remove('hint-active');
+            document.getElementById('hint-message').classList.remove('hint-level-1', 'hint-level-2', 'hint-level-3');
+            document.getElementById('q-text').classList.remove('hint-level-1', 'hint-level-2', 'hint-level-3');
         }
 
         function renderQuestion() {
@@ -556,7 +1024,19 @@
             const q = state.shuffledQuestions[state.currentQuestion];
             if (!q) return;
             const hintBtn = document.getElementById(`hint-${type}`);
-            if (hintBtn) { hintBtn.classList.add('hint-burn'); setTimeout(() => { hintBtn.style.display = 'none'; }, 700); }
+            if (hintBtn) {
+                hintBtn.classList.add('hint-burn');
+                setTimeout(() => { hintBtn.style.display = 'none'; }, 700);
+            }
+            usedHintLevels++;
+            let levelClass = '';
+            if (usedHintLevels === 1) levelClass = 'hint-level-1';
+            else if (usedHintLevels === 2) levelClass = 'hint-level-2';
+            else if (usedHintLevels === 3) levelClass = 'hint-level-3';
+            
+            document.getElementById('hint-message').className = 'hint-message ' + levelClass;
+            document.getElementById('q-text').className = 'hint-level-1'; // base class for text
+
             let msg = '';
             if (type === 'fifty') {
                 state.usedHints.fifty = true;
@@ -578,8 +1058,6 @@
                 msg = '👥 Зал голосует: ' + q.options.map((opt, i) => `${opt} — ${perc[i]}%`).join(' ');
             }
             document.getElementById('hint-message').textContent = msg;
-            document.getElementById('hint-message').classList.add('hint-active');
-            document.getElementById('q-text').classList.add('hint-active');
             playSound('hint');
             state.usedHints[type] = true;
             saveState();
@@ -670,7 +1148,6 @@
             if (!book.isPreOrder) book.stock -= 1;
             const orderText = `${playerName} заказал «${book.name}»${book.isPreOrder ? ' (под заказ)' : ''}. Монет: ${book.price}`;
             orders.push({ name: playerName, book: book.name + (book.isPreOrder ? ' (под заказ)' : ''), date: new Date().toLocaleString(), coins: book.price });
-            // Отправляем письмо с деталями заказа
             sendOrderEmail(playerName, book.name, orderText);
             
             if (book.name === "Цифровое издание") {
@@ -685,9 +1162,6 @@
             if (!document.getElementById('page-admin').classList.contains('hidden')) { renderAdminBooks(); renderOrders(); }
         }
 
-        // ================================================================
-        //  ОТПРАВКА ПИСЬМА (через mailto)
-        // ================================================================
         function sendOrderEmail(name, book, details) {
             const email = 'neizvestnyjsaz@gmail.com';
             const subject = encodeURIComponent(`📖 Новый заказ: ${book}`);
@@ -718,7 +1192,7 @@
         }
 
         // ================================================================
-        //  СУПЕР ИГРА (с таймером 60 сек)
+        //  СУПЕР ИГРА (с таймером и анимацией огня)
         // ================================================================
         let superTimerSeconds = 60;
 
@@ -739,21 +1213,26 @@
             document.getElementById('super-result').textContent = '';
             document.getElementById('super-timer').textContent = '⏱️ 60';
             document.getElementById('super-timer').style.color = '#ffd700';
+            document.getElementById('super-timer').classList.remove('fire-animation');
             document.getElementById('modal-super').classList.remove('hidden');
             
-            // Запускаем таймер
             superTimerSeconds = 60;
             if (superTimerInterval) clearInterval(superTimerInterval);
             superTimerInterval = setInterval(() => {
                 superTimerSeconds--;
                 document.getElementById('super-timer').textContent = `⏱️ ${superTimerSeconds}`;
+                // Анимация огня усиливается
                 if (superTimerSeconds <= 10) {
-                    document.getElementById('super-timer').style.color = '#ff4444';
+                    document.getElementById('super-timer').style.color = '#ff4500';
+                    document.getElementById('super-timer').classList.add('fire-animation');
+                } else if (superTimerSeconds <= 20) {
+                    document.getElementById('super-timer').style.color = '#ff8c00';
+                } else {
+                    document.getElementById('super-timer').style.color = '#ffd700';
                 }
                 if (superTimerSeconds <= 0) {
                     clearInterval(superTimerInterval);
                     superTimerInterval = null;
-                    // Автоматический проигрыш
                     document.getElementById('super-result').textContent = '⏰ Время вышло! Вы проиграли.';
                     document.getElementById('super-result').style.color = '#6b2e2e';
                     state.coins = 0;
@@ -783,6 +1262,7 @@
                 resultEl.style.color = '#6b2e2e';
                 playSound('wrong');
             }
+            document.getElementById('super-timer').classList.remove('fire-animation');
             saveState();
             document.getElementById('shop-coins').textContent = state.coins;
             document.querySelectorAll('#super-options .btn').forEach(b => b.disabled = true);
@@ -794,6 +1274,7 @@
                 clearInterval(superTimerInterval);
                 superTimerInterval = null;
             }
+            document.getElementById('super-timer').classList.remove('fire-animation');
             document.getElementById('modal-super').classList.add('hidden');
         }
 
@@ -855,13 +1336,18 @@
         function quitQuiz() { if (confirm('Прогресс не сохранится. Выйти?')) goHome(); }
 
         // ================================================================
-        //  СБРОС
+        //  СБРОС (с полным обнулением подсказок)
         // ================================================================
         function resetGame() {
             if (confirm('Все монеты и прогресс будут сброшены. Продолжить?')) {
-                state.coins = 0; state.currentQuestion = 0; state.shuffledQuestions = [];
+                state.coins = 0;
+                state.currentQuestion = 0;
+                state.shuffledQuestions = [];
                 state.usedHints = { fifty: false, call: false, hall: false };
-                saveState(); goHome(); alert('🔄 Прогресс сброшен.');
+                usedHintLevels = 0;
+                saveState();
+                goHome();
+                alert('🔄 Прогресс сброшен. Подсказки восстановлены.');
             }
         }
 
@@ -876,7 +1362,11 @@
             document.getElementById('supportPhoneText').textContent = supportPhone || 'Не указан';
             document.getElementById('supportModalPhone').textContent = supportPhone || 'Не указан';
             const savedState = localStorage.getItem('poetry_shop_state');
-            if (savedState) { const parsed = JSON.parse(savedState); state.coins = parsed.coins || 0; state.usedHints = parsed.usedHints || { fifty: false, call: false, hall: false }; }
+            if (savedState) {
+                const parsed = JSON.parse(savedState);
+                state.coins = parsed.coins || 0;
+                state.usedHints = parsed.usedHints || { fifty: false, call: false, hall: false };
+            }
             initFirebase();
             renderShop();
             renderAdminBooks();

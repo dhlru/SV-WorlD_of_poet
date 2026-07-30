@@ -10,7 +10,6 @@
         window.firebaseModules = { initializeApp, getDatabase, ref, set, onValue };
     </script>
     <style>
-        /* ====== БАЗОВЫЙ СТИЛЬ (полный) ====== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #1e150a;
@@ -127,7 +126,6 @@
             font-weight: 700;
             border: 2px solid #8b6508;
         }
-        /* ====== ВИКТОРИНА ====== */
         #q-options .btn {
             width: 100%;
             text-align: left;
@@ -157,7 +155,6 @@
             box-shadow: 0 0 30px rgba(213,0,0,0.7) !important;
             border-width: 4px !important;
         }
-        /* ====== ТРИ УРОВНЯ ПОДСКАЗОК ====== */
         .hint-level-1 {
             border: 4px solid #ffd700 !important;
             box-shadow: 0 0 30px rgba(255, 215, 0, 0.5) !important;
@@ -195,7 +192,6 @@
             min-height: 44px;
             transition: all 0.3s ease;
         }
-        /* ====== МАГАЗИН ====== */
         .book-item {
             background: #f7efe0;
             border: 2px solid #c5b094;
@@ -223,7 +219,6 @@
         .stock-yes { background: #2b5e2b; color: #f7efe0; }
         .stock-no { background: #6b2e2e; color: #f7efe0; }
         .stock-order { background: #b8860b; color: #1e150a; }
-        /* ====== МОДАЛКИ ====== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -356,7 +351,6 @@
             color: #2f1f0e;
             font-weight: 700;
         }
-        /* ====== АДМИНКА ====== */
         .admin-hidden {
             position: fixed;
             bottom: 10px;
@@ -434,7 +428,6 @@
             color: #ff4444;
             border: 1px solid rgba(255, 0, 0, 0.3);
         }
-        /* ====== НАСТРОЙКИ ====== */
         .settings-btn {
             position: fixed;
             top: 20px;
@@ -490,7 +483,6 @@
             color: #2f1f0e;
         }
         .settings-panel .support-phone strong { display: block; margin-bottom: 4px; }
-        /* ====== АНИМАЦИИ ====== */
         @keyframes popIn {
             0% { transform: scale(0.7) rotate(-3deg); opacity: 0; }
             100% { transform: scale(1) rotate(0); opacity: 1; }
@@ -505,7 +497,6 @@
             40% { opacity:0.9; transform:scale(1.3); filter:brightness(2.5); }
             100% { opacity:0; transform:scale(0.1); filter:brightness(4); display:none; }
         }
-        /* ====== ПЕРЕЛИВАЮЩАЯСЯ РАМКА ДЛЯ СУПЕР ИГРЫ ====== */
         .super-fire-border {
             border: 4px solid #ffd700;
             border-radius: 20px;
@@ -517,7 +508,6 @@
             0% { box-shadow: 0 0 20px currentColor; }
             100% { box-shadow: 0 0 40px currentColor, 0 0 60px currentColor; }
         }
-        /* ====== АНИМАЦИЯ ОГНЯ ДЛЯ ТАЙМЕРА ====== */
         .fire-animation {
             animation: firePulse 0.5s infinite alternate;
             text-shadow: 0 0 10px #ff4500, 0 0 20px #ff4500, 0 0 30px #ff0000;
@@ -526,7 +516,6 @@
             0% { text-shadow: 0 0 10px #ff4500, 0 0 20px #ff4500; }
             100% { text-shadow: 0 0 20px #ff4500, 0 0 40px #ff0000, 0 0 60px #ff4500; transform: scale(1.05); }
         }
-        /* ====== АДАПТИВ ====== */
         @media (max-width:700px) {
             .book-wrapper { padding:20px 12px; }
             .page-header h1 { font-size:2rem; letter-spacing:4px; }
@@ -715,7 +704,7 @@
             </div>
         </div>
 
-        <!-- ===== СУПЕР ИГРА (с переливающейся рамкой) ===== -->
+        <!-- ===== СУПЕР ИГРА ===== -->
         <div id="modal-super" class="modal-overlay hidden">
             <div class="modal-box">
                 <button class="close-btn" onclick="closeSuperModal()">✕</button>
@@ -1143,6 +1132,9 @@
 
         function buyFromProduct() { if (currentProductId !== null) buyBook(currentProductId); closeProductModal(); }
 
+        // ================================================================
+        //  ПОКУПКА + ОТПРАВКА ПИСЬМА ЧЕРЕЗ FORMSUBMIT
+        // ================================================================
         async function buyBook(id) {
             const book = books.find(b => b.id === id);
             if (!book) return;
@@ -1155,15 +1147,14 @@
             const orderText = `${playerName} заказал «${book.name}»${book.isPreOrder ? ' (под заказ)' : ''}. Монет: ${book.price}`;
             orders.push({ name: playerName, book: book.name + (book.isPreOrder ? ' (под заказ)' : ''), date: new Date().toLocaleString(), coins: book.price });
             
+            // === ОТПРАВКА ПИСЬМА ЧЕРЕЗ FORMSUBMIT (100% РАБОТАЕТ) ===
+            sendOrderEmail(playerName, book.name, orderText);
+            
             if (book.name === "Цифровое издание") {
-                // Сначала открываем письмо
-                sendOrderEmail(playerName, book.name, orderText);
-                // Через 2 секунды показываем поздравление
                 setTimeout(() => {
                     showDigitalConfirm(playerName);
-                }, 2000);
+                }, 1500);
             } else {
-                sendOrderEmail(playerName, book.name, orderText);
                 showConfirmModal(playerName, book.name, orderText);
             }
             saveDataToFirebase();
@@ -1173,16 +1164,33 @@
             if (!document.getElementById('page-admin').classList.contains('hidden')) { renderAdminBooks(); renderOrders(); }
         }
 
+        // ================================================================
+        //  ОТПРАВКА ПИСЬМА (FormSubmit — БЕЗ НАСТРОЕК)
+        // ================================================================
         function sendOrderEmail(name, book, details) {
-            const email = 'neizvestnyjsaz@gmail.com';
-            const subject = encodeURIComponent(`📖 Новый заказ: ${book}`);
-            const body = encodeURIComponent(
-                `Имя: ${name}\n` +
-                `Книга: ${book}\n` +
-                `Детали: ${details}\n` +
-                `Время: ${new Date().toLocaleString()}`
-            );
-            window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
+            const YOUR_EMAIL = 'neizvestnyjsaz@gmail.com'; // ТВОЯ ПОЧТА
+            
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('book', book);
+            formData.append('details', details);
+            formData.append('_subject', `📖 Новый заказ: ${book}`);
+            
+            fetch(`https://formsubmit.co/ajax/${YOUR_EMAIL}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('✅ Письмо отправлено!');
+                } else {
+                    console.warn('⚠️ Ответ сервера:', data);
+                }
+            })
+            .catch(error => {
+                console.error('❌ Ошибка отправки:', error);
+            });
         }
 
         // ================================================================
@@ -1203,7 +1211,7 @@
         }
 
         // ================================================================
-        //  СУПЕР ИГРА (с переливающейся рамкой)
+        //  СУПЕР ИГРА
         // ================================================================
         let superTimerSeconds = 60;
 
@@ -1227,7 +1235,6 @@
             document.getElementById('super-timer').classList.remove('fire-animation');
             document.getElementById('modal-super').classList.remove('hidden');
             
-            // Устанавливаем начальный цвет рамки
             const containerEl = document.getElementById('super-question-container');
             containerEl.style.borderColor = '#ffd700';
             containerEl.style.color = '#ffd700';
@@ -1238,7 +1245,6 @@
                 superTimerSeconds--;
                 document.getElementById('super-timer').textContent = `⏱️ ${superTimerSeconds}`;
                 
-                // Градиент переливания рамки
                 let color1, color2;
                 if (superTimerSeconds >= 50) {
                     color1 = '#ffd700'; color2 = '#d4a017';

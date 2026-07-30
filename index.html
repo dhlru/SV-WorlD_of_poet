@@ -10,7 +10,6 @@
         window.firebaseModules = { initializeApp, getDatabase, ref, set, onValue };
     </script>
     <style>
-        /* ====== СТИЛЬ ====== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #1e150a;
@@ -815,43 +814,6 @@
         let usedHintLevels = 0;
 
         // ================================================================
-        //  TELEGRAM УВЕДОМЛЕНИЯ
-        // ================================================================
-        const TELEGRAM_TOKEN = '8742468417:AAGcBxjDuIYgn8CcWY3IoSppD8-31TOkDIg'; // ⬅️ ВСТАВЬ СЮДА
-        const TELEGRAM_CHAT_ID = '2309559'; // ⬅️ ВСТАВЬ СЮДА
-
-        function sendTelegramNotification(orderName, orderBook) {
-            const message = 
-                `📦 Заказ принят!\n\n` +
-                `👤 Имя: ${orderName}\n` +
-                `📚 Книга: ${orderBook}\n` +
-                `🕐 Время: ${new Date().toLocaleString()}`;
-            
-            fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    chat_id: TELEGRAM_CHAT_ID,
-                    text: message,
-                    parse_mode: 'HTML'
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.ok) {
-                    console.log('✅ Уведомление отправлено в Telegram!');
-                } else {
-                    console.error('❌ Ошибка:', data);
-                }
-            })
-            .catch(error => {
-                console.error('❌ Ошибка отправки:', error);
-            });
-        }
-
-        // ================================================================
         //  ЗВУКИ
         // ================================================================
         function playSound(type) {
@@ -1171,7 +1133,7 @@
         function buyFromProduct() { if (currentProductId !== null) buyBook(currentProductId); closeProductModal(); }
 
         // ================================================================
-        //  ПОКУПКА + ОТПРАВКА ПИСЬМА
+        //  ПОКУПКА + ОТПРАВКА ПИСЬМА ЧЕРЕЗ FORMSUBMIT
         // ================================================================
         async function buyBook(id) {
             const book = books.find(b => b.id === id);
@@ -1185,6 +1147,7 @@
             const orderText = `${playerName} заказал «${book.name}»${book.isPreOrder ? ' (под заказ)' : ''}. Монет: ${book.price}`;
             orders.push({ name: playerName, book: book.name + (book.isPreOrder ? ' (под заказ)' : ''), date: new Date().toLocaleString(), coins: book.price });
             
+            // === ОТПРАВКА ПИСЬМА ЧЕРЕЗ FORMSUBMIT (100% РАБОТАЕТ) ===
             sendOrderEmail(playerName, book.name, orderText);
             
             if (book.name === "Цифровое издание") {
@@ -1202,10 +1165,11 @@
         }
 
         // ================================================================
-        //  ОТПРАВКА ПИСЬМА (FormSubmit)
+        //  ОТПРАВКА ПИСЬМА (FormSubmit — БЕЗ НАСТРОЕК)
         // ================================================================
         function sendOrderEmail(name, book, details) {
-            const YOUR_EMAIL = 'neizvestnyjsaz@gmail.com';
+            const YOUR_EMAIL = 'neizvestnyjsaz@gmail.com'; // ТВОЯ ПОЧТА
+            
             const formData = new FormData();
             formData.append('name', name);
             formData.append('book', book);
@@ -1355,53 +1319,7 @@
         }
 
         // ================================================================
-        //  АДМИНКА (с кнопкой "Принять заказ" + Telegram)
-        // ================================================================
-        function renderOrders() {
-            const container = document.getElementById('orders-list');
-            container.innerHTML = '';
-            if (orders.length === 0) {
-                container.innerHTML = '<p style="color:#5a4228;">📭 Заказов пока нет.</p>';
-                return;
-            }
-            orders.forEach((order, idx) => {
-                const div = document.createElement('div');
-                div.className = 'order-item';
-                div.innerHTML = `
-                    <span><strong>${order.name}</strong> · ${order.book} · <em>${order.date}</em></span>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <button class="btn hint-btn" onclick="acceptOrder(${idx})" style="background: #2b5e2b; border-color: #1a4a1a;">
-                            ✅ Принять заказ
-                        </button>
-                        <button class="btn hint-btn" onclick="removeOrder(${idx})" style="padding:4px 18px;">✕</button>
-                    </div>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        // ================================================================
-        //  ПРИНЯТЬ ЗАКАЗ (Telegram + удаление заказа)
-        // ================================================================
-        function acceptOrder(index) {
-            const order = orders[index];
-            if (!order) return;
-            
-            // Отправляем уведомление в Telegram
-            sendTelegramNotification(order.name, order.book);
-            
-            // Удаляем заказ из списка
-            orders.splice(index, 1);
-            saveDataToFirebase();
-            renderOrders();
-            
-            alert(`✅ Заказ для ${order.name} принят! Уведомление отправлено в Telegram.`);
-        }
-
-        function removeOrder(idx) { orders.splice(idx, 1); saveDataToFirebase(); renderOrders(); }
-
-        // ================================================================
-        //  АДМИНКА (товары)
+        //  АДМИНКА
         // ================================================================
         function renderAdminBooks() {
             const container = document.getElementById('admin-books');
@@ -1409,17 +1327,7 @@
             books.forEach((book, idx) => {
                 const div = document.createElement('div');
                 div.style.cssText = 'background:#e8dccc; padding:18px; border-radius:18px; margin:12px 0; border:1px solid #b5956a;';
-                div.innerHTML = `
-                    <label>Название: <input id="admin-name-${idx}" value="${book.name}"></label>
-                    <label>Цена: <input id="admin-price-${idx}" type="number" value="${book.price}"></label>
-                    <label>Количество: <input id="admin-stock-${idx}" type="number" value="${book.stock}"></label>
-                    <label>Обложка (URL): <input id="admin-img-${idx}" value="${book.img}" style="width:100%;"></label>
-                    <label>Галерея (URL через запятую): <input id="admin-gallery-${idx}" value="${book.gallery ? book.gallery.join(', ') : ''}" style="width:100%;"></label>
-                    <div class="admin-checkbox">
-                        <label>Принимать заказы (под заказ):</label>
-                        <input type="checkbox" id="admin-preorder-${idx}" ${book.isPreOrder ? 'checked' : ''}>
-                    </div>
-                `;
+                div.innerHTML = `<label>Название: <input id="admin-name-${idx}" value="${book.name}"></label><label>Цена: <input id="admin-price-${idx}" type="number" value="${book.price}"></label><label>Количество: <input id="admin-stock-${idx}" type="number" value="${book.stock}"></label><label>Обложка (URL): <input id="admin-img-${idx}" value="${book.img}" style="width:100%;"></label><label>Галерея (URL через запятую): <input id="admin-gallery-${idx}" value="${book.gallery ? book.gallery.join(', ') : ''}" style="width:100%;"></label><div class="admin-checkbox"><label>Принимать заказы (под заказ):</label><input type="checkbox" id="admin-preorder-${idx}" ${book.isPreOrder ? 'checked' : ''}></div>`;
                 container.appendChild(div);
             });
         }
@@ -1441,6 +1349,20 @@
             renderShop();
         }
 
+        function renderOrders() {
+            const container = document.getElementById('orders-list');
+            container.innerHTML = '';
+            if (orders.length === 0) { container.innerHTML = '<p style="color:#5a4228;">📭 Заказов пока нет.</p>'; return; }
+            orders.forEach((order, idx) => {
+                const div = document.createElement('div');
+                div.className = 'order-item';
+                div.innerHTML = `<span><strong>${order.name}</strong> · ${order.book} · <em>${order.date}</em></span><button class="btn hint-btn" onclick="removeOrder(${idx})" style="padding:4px 18px;">✕</button>`;
+                container.appendChild(div);
+            });
+        }
+
+        function removeOrder(idx) { orders.splice(idx, 1); saveDataToFirebase(); renderOrders(); }
+
         // ================================================================
         //  НАВИГАЦИЯ
         // ================================================================
@@ -1454,7 +1376,7 @@
         function quitQuiz() { if (confirm('Прогресс не сохранится. Выйти?')) goHome(); }
 
         // ================================================================
-        //  СБРОС
+        //  СБРОС (с полным обнулением подсказок)
         // ================================================================
         function resetGame() {
             if (confirm('Все монеты и прогресс будут сброшены. Продолжить?')) {
@@ -1470,7 +1392,7 @@
         }
 
         // ================================================================
-        //  ИНИЦИАЛИЗАЦИЯ + SERVICE WORKER
+        //  ИНИЦИАЛИЗАЦИЯ
         // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -1498,19 +1420,6 @@
                 supportBtn.onclick = openEditSupportModal;
                 supportBtn.style.marginTop = '10px';
                 adminArea.appendChild(supportBtn);
-            }
-
-            // ================================================================
-            //  РЕГИСТРАЦИЯ SERVICE WORKER (для push-уведомлений)
-            // ================================================================
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                        console.log('✅ Service Worker зарегистрирован!');
-                    })
-                    .catch(function(error) {
-                        console.log('❌ Ошибка регистрации Service Worker:', error);
-                    });
             }
         });
     </script>

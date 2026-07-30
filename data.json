@@ -1,0 +1,8 @@
+{
+  "books": [
+    {"id":0,"name":"Цифровое издание","price":30,"img":"https://via.placeholder.com/150x200?text=PDF","stock":100,"isPreOrder":false,"gallery":[]},
+    {"id":1,"name":"Классическое издание","price":60,"img":"https://via.placeholder.com/150x200?text=Книга","stock":2,"isPreOrder":false,"gallery":[]},
+    {"id":2,"name":"Специальное издание","price":100,"img":"https://via.placeholder.com/150x200?text=Спец","stock":1,"isPreOrder":false,"gallery":[]}
+  ],
+  "orders": []
+}

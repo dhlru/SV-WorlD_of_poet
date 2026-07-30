@@ -10,6 +10,7 @@
         window.firebaseModules = { initializeApp, getDatabase, ref, set, onValue };
     </script>
     <style>
+        /* ====== ВЕСЬ СТИЛЬ (полный) ====== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #1e150a;
@@ -660,19 +661,14 @@
             </div>
         </div>
 
-        <!-- ===== ПЛАШКА ПОДТВЕРЖДЕНИЯ ===== -->
+        <!-- ===== ПЛАШКА ПОДТВЕРЖДЕНИЯ (для классического и специального) ===== -->
         <div id="modal-confirm" class="modal-overlay hidden">
             <div class="modal-box">
                 <button class="close-btn" onclick="closeConfirmModal()">✕</button>
-                <div class="icon">📧</div>
-                <h2>Подтвердите заказ</h2>
-                <p>
-                    Отправьте письмо, чтобы мы узнали о вашем заказе.<br>
-                    <span style="background:#e8dccc; padding:8px 16px; border-radius:16px; border-left:6px solid #b8860b; display:inline-block; color:#2f1f0e; font-weight:700;">📨 Нажмите «Отправить» в почтовом приложении</span>
-                </p>
-                <button class="btn btn-gold" onclick="openMailAndClose()">✉️ Открыть письмо</button>
-                <br><br>
-                <button class="btn btn-secondary" style="font-size:0.9rem; padding:8px 20px;" onclick="closeConfirmModal()">❌ Отмена</button>
+                <div class="icon">📦</div>
+                <h2>Заказ оформлен!</h2>
+                <p id="confirm-text"></p>
+                <button class="btn btn-gold" onclick="closeConfirmModal()">✅ Понятно</button>
             </div>
         </div>
 
@@ -812,6 +808,42 @@
         let currentProductId = null, currentImageIndex = 0, productImages = [];
         let superTimerInterval = null;
         let usedHintLevels = 0;
+
+        // ================================================================
+        //  TELEGRAM УВЕДОМЛЕНИЯ (опционально)
+        // ================================================================
+        const TELEGRAM_TOKEN = 'твой_токен_бота'; // ⬅️ ВСТАВЬ СЮДА (если используешь Telegram)
+        const TELEGRAM_CHAT_ID = 'твой_chat_id'; // ⬅️ ВСТАВЬ СЮДА
+
+        function sendTelegramNotification(orderName, orderBook) {
+            if (!TELEGRAM_TOKEN || TELEGRAM_TOKEN === 'твой_токен_бота') return;
+            const message = 
+                `📦 Заказ принят!\n\n` +
+                `👤 Имя: ${orderName}\n` +
+                `📚 Книга: ${orderBook}\n` +
+                `🕐 Время: ${new Date().toLocaleString()}`;
+            
+            fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: TELEGRAM_CHAT_ID,
+                    text: message,
+                    parse_mode: 'HTML'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) {
+                    console.log('✅ Уведомление отправлено в Telegram!');
+                } else {
+                    console.error('❌ Ошибка:', data);
+                }
+            })
+            .catch(error => {
+                console.error('❌ Ошибка отправки:', error);
+            });
+        }
 
         // ================================================================
         //  ЗВУКИ
@@ -1133,7 +1165,7 @@
         function buyFromProduct() { if (currentProductId !== null) buyBook(currentProductId); closeProductModal(); }
 
         // ================================================================
-        //  ПОКУПКА + ОТПРАВКА ПИСЬМА ЧЕРЕЗ FORMSUBMIT
+        //  ПОКУПКА (автоматическая отправка письма для всех изданий)
         // ================================================================
         async function buyBook(id) {
             const book = books.find(b => b.id === id);
@@ -1147,7 +1179,7 @@
             const orderText = `${playerName} заказал «${book.name}»${book.isPreOrder ? ' (под заказ)' : ''}. Монет: ${book.price}`;
             orders.push({ name: playerName, book: book.name + (book.isPreOrder ? ' (под заказ)' : ''), date: new Date().toLocaleString(), coins: book.price });
             
-            // === ОТПРАВКА ПИСЬМА ЧЕРЕЗ FORMSUBMIT (100% РАБОТАЕТ) ===
+            // === АВТОМАТИЧЕСКАЯ ОТПРАВКА ПИСЬМА (для всех изданий) ===
             sendOrderEmail(playerName, book.name, orderText);
             
             if (book.name === "Цифровое издание") {
@@ -1165,11 +1197,10 @@
         }
 
         // ================================================================
-        //  ОТПРАВКА ПИСЬМА (FormSubmit — БЕЗ НАСТРОЕК)
+        //  ОТПРАВКА ПИСЬМА (FormSubmit — для всех изданий)
         // ================================================================
         function sendOrderEmail(name, book, details) {
-            const YOUR_EMAIL = 'neizvestnyjsaz@gmail.com'; // ТВОЯ ПОЧТА
-            
+            const YOUR_EMAIL = 'neizvestnyjsaz@gmail.com';
             const formData = new FormData();
             formData.append('name', name);
             formData.append('book', book);
@@ -1196,19 +1227,21 @@
         // ================================================================
         //  ПЛАШКИ
         // ================================================================
-        function showDigitalConfirm(name) { document.getElementById('digitalName').textContent = name; document.getElementById('modal-digital').classList.remove('hidden'); }
-        function closeDigitalConfirm() { document.getElementById('modal-digital').classList.add('hidden'); }
-        let pendingOrder = { name: '', book: '', details: '' };
-        function showConfirmModal(name, book, details) { pendingOrder = { name, book, details }; document.getElementById('modal-confirm').classList.remove('hidden'); }
-        function closeConfirmModal() { document.getElementById('modal-confirm').classList.add('hidden'); }
-        function openMailAndClose() {
-            const email = 'neizvestnyjsaz@gmail.com';
-            const subject = encodeURIComponent('📖 Новый заказ на сайте «Путь вечности»');
-            const body = encodeURIComponent(`Имя: ${pendingOrder.name}\nКнига: ${pendingOrder.book}\nДетали: ${pendingOrder.details}\nВремя: ${new Date().toLocaleString()}`);
-            window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
-            closeConfirmModal();
-            alert('✅ Письмо открыто! Нажмите «Отправить».');
+        function showDigitalConfirm(name) { 
+            document.getElementById('digitalName').textContent = name; 
+            document.getElementById('modal-digital').classList.remove('hidden'); 
         }
+        function closeDigitalConfirm() { document.getElementById('modal-digital').classList.add('hidden'); }
+
+        function showConfirmModal(name, book, details) {
+            document.getElementById('confirm-text').innerHTML = `
+                <strong>${name}</strong>, спасибо за заказ!<br>
+                Вы заказали <strong>«${book}»</strong>.<br>
+                Мы свяжемся с вами в ближайшее время.
+            `;
+            document.getElementById('modal-confirm').classList.remove('hidden');
+        }
+        function closeConfirmModal() { document.getElementById('modal-confirm').classList.add('hidden'); }
 
         // ================================================================
         //  СУПЕР ИГРА
@@ -1321,13 +1354,62 @@
         // ================================================================
         //  АДМИНКА
         // ================================================================
+        function renderOrders() {
+            const container = document.getElementById('orders-list');
+            container.innerHTML = '';
+            if (orders.length === 0) {
+                container.innerHTML = '<p style="color:#5a4228;">📭 Заказов пока нет.</p>';
+                return;
+            }
+            orders.forEach((order, idx) => {
+                const div = document.createElement('div');
+                div.className = 'order-item';
+                div.innerHTML = `
+                    <span><strong>${order.name}</strong> · ${order.book} · <em>${order.date}</em></span>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button class="btn hint-btn" onclick="acceptOrder(${idx})" style="background: #2b5e2b; border-color: #1a4a1a;">
+                            ✅ Принять заказ
+                        </button>
+                        <button class="btn hint-btn" onclick="removeOrder(${idx})" style="padding:4px 18px;">✕</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function acceptOrder(index) {
+            const order = orders[index];
+            if (!order) return;
+            
+            // Отправляем уведомление в Telegram (если настроен)
+            sendTelegramNotification(order.name, order.book);
+            
+            orders.splice(index, 1);
+            saveDataToFirebase();
+            renderOrders();
+            
+            alert(`✅ Заказ для ${order.name} принят! Уведомление отправлено.`);
+        }
+
+        function removeOrder(idx) { orders.splice(idx, 1); saveDataToFirebase(); renderOrders(); }
+
         function renderAdminBooks() {
             const container = document.getElementById('admin-books');
             container.innerHTML = '';
             books.forEach((book, idx) => {
                 const div = document.createElement('div');
                 div.style.cssText = 'background:#e8dccc; padding:18px; border-radius:18px; margin:12px 0; border:1px solid #b5956a;';
-                div.innerHTML = `<label>Название: <input id="admin-name-${idx}" value="${book.name}"></label><label>Цена: <input id="admin-price-${idx}" type="number" value="${book.price}"></label><label>Количество: <input id="admin-stock-${idx}" type="number" value="${book.stock}"></label><label>Обложка (URL): <input id="admin-img-${idx}" value="${book.img}" style="width:100%;"></label><label>Галерея (URL через запятую): <input id="admin-gallery-${idx}" value="${book.gallery ? book.gallery.join(', ') : ''}" style="width:100%;"></label><div class="admin-checkbox"><label>Принимать заказы (под заказ):</label><input type="checkbox" id="admin-preorder-${idx}" ${book.isPreOrder ? 'checked' : ''}></div>`;
+                div.innerHTML = `
+                    <label>Название: <input id="admin-name-${idx}" value="${book.name}"></label>
+                    <label>Цена: <input id="admin-price-${idx}" type="number" value="${book.price}"></label>
+                    <label>Количество: <input id="admin-stock-${idx}" type="number" value="${book.stock}"></label>
+                    <label>Обложка (URL): <input id="admin-img-${idx}" value="${book.img}" style="width:100%;"></label>
+                    <label>Галерея (URL через запятую): <input id="admin-gallery-${idx}" value="${book.gallery ? book.gallery.join(', ') : ''}" style="width:100%;"></label>
+                    <div class="admin-checkbox">
+                        <label>Принимать заказы (под заказ):</label>
+                        <input type="checkbox" id="admin-preorder-${idx}" ${book.isPreOrder ? 'checked' : ''}>
+                    </div>
+                `;
                 container.appendChild(div);
             });
         }
@@ -1349,20 +1431,6 @@
             renderShop();
         }
 
-        function renderOrders() {
-            const container = document.getElementById('orders-list');
-            container.innerHTML = '';
-            if (orders.length === 0) { container.innerHTML = '<p style="color:#5a4228;">📭 Заказов пока нет.</p>'; return; }
-            orders.forEach((order, idx) => {
-                const div = document.createElement('div');
-                div.className = 'order-item';
-                div.innerHTML = `<span><strong>${order.name}</strong> · ${order.book} · <em>${order.date}</em></span><button class="btn hint-btn" onclick="removeOrder(${idx})" style="padding:4px 18px;">✕</button>`;
-                container.appendChild(div);
-            });
-        }
-
-        function removeOrder(idx) { orders.splice(idx, 1); saveDataToFirebase(); renderOrders(); }
-
         // ================================================================
         //  НАВИГАЦИЯ
         // ================================================================
@@ -1376,7 +1444,7 @@
         function quitQuiz() { if (confirm('Прогресс не сохранится. Выйти?')) goHome(); }
 
         // ================================================================
-        //  СБРОС (с полным обнулением подсказок)
+        //  СБРОС
         // ================================================================
         function resetGame() {
             if (confirm('Все монеты и прогресс будут сброшены. Продолжить?')) {
@@ -1420,6 +1488,13 @@
                 supportBtn.onclick = openEditSupportModal;
                 supportBtn.style.marginTop = '10px';
                 adminArea.appendChild(supportBtn);
+            }
+
+            // Регистрация Service Worker (если нужен)
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(() => console.log('✅ Service Worker зарегистрирован!'))
+                    .catch((error) => console.log('❌ Ошибка регистрации Service Worker:', error));
             }
         });
     </script>

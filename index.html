@@ -10,7 +10,7 @@
         window.firebaseModules = { initializeApp, getDatabase, ref, set, onValue };
     </script>
     <style>
-        /* ====== ВЕСЬ СТИЛЬ (полный) ====== */
+        /* ====== СТИЛЬ ====== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #1e150a;
@@ -815,6 +815,43 @@
         let usedHintLevels = 0;
 
         // ================================================================
+        //  TELEGRAM УВЕДОМЛЕНИЯ
+        // ================================================================
+        const TELEGRAM_TOKEN = '8742468417:AAGcBxjDuIYgn8CcWY3IoSppD8-31TOkDIg'; // ⬅️ ВСТАВЬ СЮДА
+        const TELEGRAM_CHAT_ID = '2309559'; // ⬅️ ВСТАВЬ СЮДА
+
+        function sendTelegramNotification(orderName, orderBook) {
+            const message = 
+                `📦 Заказ принят!\n\n` +
+                `👤 Имя: ${orderName}\n` +
+                `📚 Книга: ${orderBook}\n` +
+                `🕐 Время: ${new Date().toLocaleString()}`;
+            
+            fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chat_id: TELEGRAM_CHAT_ID,
+                    text: message,
+                    parse_mode: 'HTML'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) {
+                    console.log('✅ Уведомление отправлено в Telegram!');
+                } else {
+                    console.error('❌ Ошибка:', data);
+                }
+            })
+            .catch(error => {
+                console.error('❌ Ошибка отправки:', error);
+            });
+        }
+
+        // ================================================================
         //  ЗВУКИ
         // ================================================================
         function playSound(type) {
@@ -1193,42 +1230,6 @@
         }
 
         // ================================================================
-        //  PUSH-УВЕДОМЛЕНИЕ "ЗАКАЗ ПРИНЯТ"
-        // ================================================================
-        function sendPushNotification(orderName, orderBook) {
-            if (!('Notification' in window)) {
-                alert('Ваш браузер не поддерживает уведомления');
-                return;
-            }
-            
-            if (Notification.permission === 'default') {
-                Notification.requestPermission().then(perm => {
-                    if (perm === 'granted') {
-                        showPush(orderName, orderBook);
-                    } else {
-                        alert('Разрешите уведомления в браузере.');
-                    }
-                });
-            } else if (Notification.permission === 'granted') {
-                showPush(orderName, orderBook);
-            } else {
-                alert('Уведомления заблокированы. Разрешите их в настройках браузера.');
-            }
-        }
-
-        function showPush(name, book) {
-            const notification = new Notification('📦 Заказ принят!', {
-                body: `${name}, ваш заказ «${book}» принят! Скоро с вами свяжутся.`,
-                icon: '📖'
-            });
-            notification.onclick = function() {
-                window.focus();
-                this.close();
-            };
-            setTimeout(() => notification.close(), 8000);
-        }
-
-        // ================================================================
         //  ПЛАШКИ
         // ================================================================
         function showDigitalConfirm(name) { document.getElementById('digitalName').textContent = name; document.getElementById('modal-digital').classList.remove('hidden'); }
@@ -1354,7 +1355,7 @@
         }
 
         // ================================================================
-        //  АДМИНКА (с кнопкой "Принять заказ")
+        //  АДМИНКА (с кнопкой "Принять заказ" + Telegram)
         // ================================================================
         function renderOrders() {
             const container = document.getElementById('orders-list');
@@ -1380,19 +1381,21 @@
         }
 
         // ================================================================
-        //  ПРИНЯТЬ ЗАКАЗ (push-уведомление покупателю)
+        //  ПРИНЯТЬ ЗАКАЗ (Telegram + удаление заказа)
         // ================================================================
         function acceptOrder(index) {
             const order = orders[index];
             if (!order) return;
             
-            sendPushNotification(order.name, order.book);
+            // Отправляем уведомление в Telegram
+            sendTelegramNotification(order.name, order.book);
             
+            // Удаляем заказ из списка
             orders.splice(index, 1);
             saveDataToFirebase();
             renderOrders();
             
-            alert(`✅ Заказ для ${order.name} принят! Уведомление отправлено.`);
+            alert(`✅ Заказ для ${order.name} принят! Уведомление отправлено в Telegram.`);
         }
 
         function removeOrder(idx) { orders.splice(idx, 1); saveDataToFirebase(); renderOrders(); }

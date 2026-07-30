@@ -10,6 +10,7 @@
         window.firebaseModules = { initializeApp, getDatabase, ref, set, onValue };
     </script>
     <style>
+        /* ====== ВЕСЬ СТИЛЬ (полный) ====== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #1e150a;
@@ -1133,7 +1134,7 @@
         function buyFromProduct() { if (currentProductId !== null) buyBook(currentProductId); closeProductModal(); }
 
         // ================================================================
-        //  ПОКУПКА + ОТПРАВКА ПИСЬМА ЧЕРЕЗ FORMSUBMIT
+        //  ПОКУПКА + ОТПРАВКА ПИСЬМА
         // ================================================================
         async function buyBook(id) {
             const book = books.find(b => b.id === id);
@@ -1147,7 +1148,6 @@
             const orderText = `${playerName} заказал «${book.name}»${book.isPreOrder ? ' (под заказ)' : ''}. Монет: ${book.price}`;
             orders.push({ name: playerName, book: book.name + (book.isPreOrder ? ' (под заказ)' : ''), date: new Date().toLocaleString(), coins: book.price });
             
-            // === ОТПРАВКА ПИСЬМА ЧЕРЕЗ FORMSUBMIT (100% РАБОТАЕТ) ===
             sendOrderEmail(playerName, book.name, orderText);
             
             if (book.name === "Цифровое издание") {
@@ -1165,11 +1165,10 @@
         }
 
         // ================================================================
-        //  ОТПРАВКА ПИСЬМА (FormSubmit — БЕЗ НАСТРОЕК)
+        //  ОТПРАВКА ПИСЬМА (FormSubmit)
         // ================================================================
         function sendOrderEmail(name, book, details) {
-            const YOUR_EMAIL = 'neizvestnyjsaz@gmail.com'; // ТВОЯ ПОЧТА
-            
+            const YOUR_EMAIL = 'neizvestnyjsaz@gmail.com';
             const formData = new FormData();
             formData.append('name', name);
             formData.append('book', book);
@@ -1191,6 +1190,42 @@
             .catch(error => {
                 console.error('❌ Ошибка отправки:', error);
             });
+        }
+
+        // ================================================================
+        //  PUSH-УВЕДОМЛЕНИЕ "ЗАКАЗ ПРИНЯТ"
+        // ================================================================
+        function sendPushNotification(orderName, orderBook) {
+            if (!('Notification' in window)) {
+                alert('Ваш браузер не поддерживает уведомления');
+                return;
+            }
+            
+            if (Notification.permission === 'default') {
+                Notification.requestPermission().then(perm => {
+                    if (perm === 'granted') {
+                        showPush(orderName, orderBook);
+                    } else {
+                        alert('Разрешите уведомления в браузере.');
+                    }
+                });
+            } else if (Notification.permission === 'granted') {
+                showPush(orderName, orderBook);
+            } else {
+                alert('Уведомления заблокированы. Разрешите их в настройках браузера.');
+            }
+        }
+
+        function showPush(name, book) {
+            const notification = new Notification('📦 Заказ принят!', {
+                body: `${name}, ваш заказ «${book}» принят! Скоро с вами свяжутся.`,
+                icon: '📖'
+            });
+            notification.onclick = function() {
+                window.focus();
+                this.close();
+            };
+            setTimeout(() => notification.close(), 8000);
         }
 
         // ================================================================
@@ -1319,7 +1354,51 @@
         }
 
         // ================================================================
-        //  АДМИНКА
+        //  АДМИНКА (с кнопкой "Принять заказ")
+        // ================================================================
+        function renderOrders() {
+            const container = document.getElementById('orders-list');
+            container.innerHTML = '';
+            if (orders.length === 0) {
+                container.innerHTML = '<p style="color:#5a4228;">📭 Заказов пока нет.</p>';
+                return;
+            }
+            orders.forEach((order, idx) => {
+                const div = document.createElement('div');
+                div.className = 'order-item';
+                div.innerHTML = `
+                    <span><strong>${order.name}</strong> · ${order.book} · <em>${order.date}</em></span>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button class="btn hint-btn" onclick="acceptOrder(${idx})" style="background: #2b5e2b; border-color: #1a4a1a;">
+                            ✅ Принять заказ
+                        </button>
+                        <button class="btn hint-btn" onclick="removeOrder(${idx})" style="padding:4px 18px;">✕</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // ================================================================
+        //  ПРИНЯТЬ ЗАКАЗ (push-уведомление покупателю)
+        // ================================================================
+        function acceptOrder(index) {
+            const order = orders[index];
+            if (!order) return;
+            
+            sendPushNotification(order.name, order.book);
+            
+            orders.splice(index, 1);
+            saveDataToFirebase();
+            renderOrders();
+            
+            alert(`✅ Заказ для ${order.name} принят! Уведомление отправлено.`);
+        }
+
+        function removeOrder(idx) { orders.splice(idx, 1); saveDataToFirebase(); renderOrders(); }
+
+        // ================================================================
+        //  АДМИНКА (товары)
         // ================================================================
         function renderAdminBooks() {
             const container = document.getElementById('admin-books');
@@ -1327,7 +1406,17 @@
             books.forEach((book, idx) => {
                 const div = document.createElement('div');
                 div.style.cssText = 'background:#e8dccc; padding:18px; border-radius:18px; margin:12px 0; border:1px solid #b5956a;';
-                div.innerHTML = `<label>Название: <input id="admin-name-${idx}" value="${book.name}"></label><label>Цена: <input id="admin-price-${idx}" type="number" value="${book.price}"></label><label>Количество: <input id="admin-stock-${idx}" type="number" value="${book.stock}"></label><label>Обложка (URL): <input id="admin-img-${idx}" value="${book.img}" style="width:100%;"></label><label>Галерея (URL через запятую): <input id="admin-gallery-${idx}" value="${book.gallery ? book.gallery.join(', ') : ''}" style="width:100%;"></label><div class="admin-checkbox"><label>Принимать заказы (под заказ):</label><input type="checkbox" id="admin-preorder-${idx}" ${book.isPreOrder ? 'checked' : ''}></div>`;
+                div.innerHTML = `
+                    <label>Название: <input id="admin-name-${idx}" value="${book.name}"></label>
+                    <label>Цена: <input id="admin-price-${idx}" type="number" value="${book.price}"></label>
+                    <label>Количество: <input id="admin-stock-${idx}" type="number" value="${book.stock}"></label>
+                    <label>Обложка (URL): <input id="admin-img-${idx}" value="${book.img}" style="width:100%;"></label>
+                    <label>Галерея (URL через запятую): <input id="admin-gallery-${idx}" value="${book.gallery ? book.gallery.join(', ') : ''}" style="width:100%;"></label>
+                    <div class="admin-checkbox">
+                        <label>Принимать заказы (под заказ):</label>
+                        <input type="checkbox" id="admin-preorder-${idx}" ${book.isPreOrder ? 'checked' : ''}>
+                    </div>
+                `;
                 container.appendChild(div);
             });
         }
@@ -1349,20 +1438,6 @@
             renderShop();
         }
 
-        function renderOrders() {
-            const container = document.getElementById('orders-list');
-            container.innerHTML = '';
-            if (orders.length === 0) { container.innerHTML = '<p style="color:#5a4228;">📭 Заказов пока нет.</p>'; return; }
-            orders.forEach((order, idx) => {
-                const div = document.createElement('div');
-                div.className = 'order-item';
-                div.innerHTML = `<span><strong>${order.name}</strong> · ${order.book} · <em>${order.date}</em></span><button class="btn hint-btn" onclick="removeOrder(${idx})" style="padding:4px 18px;">✕</button>`;
-                container.appendChild(div);
-            });
-        }
-
-        function removeOrder(idx) { orders.splice(idx, 1); saveDataToFirebase(); renderOrders(); }
-
         // ================================================================
         //  НАВИГАЦИЯ
         // ================================================================
@@ -1376,7 +1451,7 @@
         function quitQuiz() { if (confirm('Прогресс не сохранится. Выйти?')) goHome(); }
 
         // ================================================================
-        //  СБРОС (с полным обнулением подсказок)
+        //  СБРОС
         // ================================================================
         function resetGame() {
             if (confirm('Все монеты и прогресс будут сброшены. Продолжить?')) {
@@ -1392,7 +1467,7 @@
         }
 
         // ================================================================
-        //  ИНИЦИАЛИЗАЦИЯ
+        //  ИНИЦИАЛИЗАЦИЯ + SERVICE WORKER
         // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -1420,6 +1495,19 @@
                 supportBtn.onclick = openEditSupportModal;
                 supportBtn.style.marginTop = '10px';
                 adminArea.appendChild(supportBtn);
+            }
+
+            // ================================================================
+            //  РЕГИСТРАЦИЯ SERVICE WORKER (для push-уведомлений)
+            // ================================================================
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('✅ Service Worker зарегистрирован!');
+                    })
+                    .catch(function(error) {
+                        console.log('❌ Ошибка регистрации Service Worker:', error);
+                    });
             }
         });
     </script>
